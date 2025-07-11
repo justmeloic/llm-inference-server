@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-inference-server"
+version = "0.1.0"
+description = "High-performance LLM inference server optimized for Apple M2 with dynamic batching"
+readme = "README.md"
+requires-python = "~=3.12"
+authors = [{ name = "Loïc Muhirwa", email = "loic.muhirwa@gmail.com" }]
+license = { text = "MIT" }
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "llama-cpp-python>=0.2.20",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-multipart>=0.0.6",
+    "httpx>=0.25.0",
+    "asyncio-throttle>=1.0.0",
+    "rich>=13.3.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+]
+cli = ["typer>=0.9.0"]
+
+[project.scripts]
+chat = "src.cli.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 88
