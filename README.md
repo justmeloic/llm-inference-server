@@ -14,7 +14,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![llama.cpp](https://img.shields.io/badge/backend-llama.cpp-green.svg)](https://github.com/ggerganov/llama.cpp)
 
-This project started as a fun experiment to see just how much performance I could squeeze out of my MacBook Pro M2. It's a high-performance LLM inference server optimized for Apple Silicon, designed to be both powerful and efficient.
+An LLM inference server optimized for Apple Silicon, started as a fun experiment to see just how much performance I could squeeze out of my MacBook Pro M2.
 
 ## What's Inside?
 
