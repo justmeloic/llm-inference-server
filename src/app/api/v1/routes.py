@@ -16,7 +16,7 @@ from starlette.status import (
     HTTP_503_SERVICE_UNAVAILABLE,
 )
 
-from ...core.config import get_settings
+from ....lib.core.config import get_settings
 from ...schemas.request import GenerationRequest
 from ...schemas.response import (
     ErrorResponse,

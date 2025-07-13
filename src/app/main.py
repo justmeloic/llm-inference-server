@@ -5,6 +5,8 @@ This module initializes the FastAPI application, configures middleware,
 and sets up the inference service with proper lifecycle management.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
@@ -17,9 +19,9 @@ from fastapi.responses import JSONResponse
 from rich.console import Console
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-from .api.v1.endpoints import router as v1_router
-from .core.banner import print_banner
-from .core.config import get_settings
+from ..lib.core.banner import print_banner
+from ..lib.core.config import get_settings
+from .api.v1.routes import router as v1_router
 from .services.inference_service import get_inference_service
 
 # Configure logging

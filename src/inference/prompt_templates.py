@@ -1,12 +1,7 @@
-"""
-Prompt templates for various model types and use cases.
-
-This module provides utilities for formatting prompts according to
-different model conventions and chat formats.
-"""
+from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 class PromptFormat(Enum):

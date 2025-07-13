@@ -2,16 +2,18 @@
 A simple CLI application for chatting with the LLM inference server.
 """
 
-import json
+from __future__ import annotations
 
 import httpx
 import typer
 from rich.console import Console
-from rich.markdown import Markdown
+
+from ..lib.core.config import get_settings
 
 # --- Configuration ---
-SERVER_URL = "http://localhost:8000/api/v1/generate"
-APP_NAME = "LLM Server Chat"
+settings = get_settings()
+SERVER_URL = settings.server_url
+APP_NAME = settings.app_name
 
 # --- Typer App and Console ---
 app = typer.Typer(

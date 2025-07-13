@@ -5,16 +5,17 @@ This module provides the core inference capabilities using llama.cpp
 with Metal Performance Shaders (MPS) acceleration.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import time
 import uuid
-from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-from llama_cpp import Llama, LlamaGrammar
+from llama_cpp import Llama
 
-from ..app.core.config import Settings
+from ..lib.core.config import Settings
 
 logger = logging.getLogger(__name__)
 
