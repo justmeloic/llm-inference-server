@@ -10,7 +10,7 @@
 # LLM Inference Server
 
 [![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-blue)](https://fastapi.tiangolo.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-blue)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![llama.cpp](https://img.shields.io/badge/backend-llama.cpp-green.svg)](https://github.com/ggerganov/llama.cpp)
 
@@ -19,6 +19,7 @@ An LLM inference server optimized for Apple Silicon, started as a fun experiment
 ## What's Inside?
 
 - **Apple Silicon Optimized**: Uses Metal Performance Shaders (MPS) to get the most out of the M2 GPU.
+- **Multi-Model Support**: Comes ready to run with `Phi-3`, `Gemma`, and `TinyLlama`.
 - **Dynamic Batching**: Groups incoming requests on the fly to maximize throughput, making the server fast and responsive.
 - **Real-time Streaming**: Supports live, streaming responses for building interactive applications.
 - **Memory-Conscious**: Built to run smoothly on an 8GB unified memory system by using GGUF quantized models.
@@ -32,40 +33,56 @@ An LLM inference server optimized for Apple Silicon, started as a fun experiment
 
 ## Installation
 
-1. Clone the repository:
+1.  Clone the repository:
 
-```bash
-git clone <repository-url>
-cd llm-inference-server
-```
+    ```bash
+    git clone <repository-url>
+    cd llm-inference-server
+    ```
 
-2. Install dependencies:
+2.  Install dependencies using Poetry:
 
-```bash
-pip install -e .
-```
+    ```bash
+    poetry install
+    ```
 
-Or using requirements.txt:
+3.  Download the models:
 
-```bash
-pip install -r requirements.txt
-```
+    The script is configured to download all supported models by default.
 
-3. Download a model:
+    ```bash
+    chmod +x scripts/download_model.sh
+    ./scripts/download_model.sh
+    ```
 
-```bash
-chmod +x scripts/download_model.sh
-./scripts/download_model.sh
-```
+    To download a specific model, pass it as an argument (e.g., `phi3`, `gemma`, `tinyllama`):
+
+    ```bash
+    ./scripts/download_model.sh phi3 tinyllama
+    ```
+
+    > **Note on Gemma**: The Gemma model is gated and requires a Hugging Face account. For the most reliable download, please log in via the CLI first:
+    >
+    > ```bash
+    > pip install -U "huggingface_hub[cli]"
+    > huggingface-cli login
+    > ```
+    >
+    > You must also accept the license on the [Gemma model page](https://huggingface.co/google/gemma-2b-it).
 
 ## Configuration
 
-The server uses environment variables for configuration. Create a `.env` file in the root directory:
+The server uses environment variables for configuration. Create a `.env` file in the root directory and choose which model to run.
 
 ```env
-MODEL_PATH=./models/phi-3-mini-4k-instruct-q4.gguf
+# --- Choose a model ---
+# MODEL_PATH=./models/phi-3-mini-4k-instruct-q4.gguf
+MODEL_PATH=./models/gemma-2b-it.Q4_K_M.gguf
+# MODEL_PATH=./models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+
+# --- Server and Llama.cpp configuration ---
 SERVER_HOST=0.0.0.0
-SERVER_PORT=8000
+SERVER_PORT=8081
 N_GPU_LAYERS=32
 N_CTX=4096
 N_BATCH=512
@@ -78,20 +95,20 @@ BATCH_TIMEOUT=0.1
 ### Start the server:
 
 ```bash
-python -m uvicorn src.app.main:app --host 0.0.0.0 --port 8000
+poetry run dev
 ```
 
 ### API Documentation
 
 Once running, visit:
 
-- API Documentation: http://localhost:8000/docs
-- Alternative docs: http://localhost:8000/redoc
+- API Documentation: http://localhost:8081/docs
+- Alternative docs: http://localhost:8081/redoc
 
 ### Example API Call
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/generate" \
+curl -X POST "http://localhost:8081/api/v1/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "What is the capital of France?",
@@ -106,7 +123,7 @@ curl -X POST "http://localhost:8000/api/v1/generate" \
 The server supports real-time streaming of responses. Use the `-N` flag with `curl` to disable buffering and see the tokens as they are generated.
 
 ```bash
-curl -N -X POST "http://localhost:8000/api/v1/generate" \
+curl -N -X POST "http://localhost:8081/api/v1/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Write a short story about a robot who discovers music.",
@@ -120,7 +137,7 @@ curl -N -X POST "http://localhost:8000/api/v1/generate" \
 You can test the server's ability to handle concurrent requests and batch them together by sending multiple requests simultaneously. The server will group these into a single batch for efficient processing.
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/generate" \
+curl -X POST "http://localhost:8081/api/v1/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "What is the capital of France?",
@@ -128,7 +145,7 @@ curl -X POST "http://localhost:8000/api/v1/generate" \
     "stream": false
   }' &
 
-curl -X POST "http://localhost:8000/api/v1/generate" \
+curl -X POST "http://localhost:8081/api/v1/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Write a short poem about a robot.",
@@ -136,7 +153,7 @@ curl -X POST "http://localhost:8000/api/v1/generate" \
     "stream": false
   }' &
 
-curl -X POST "http://localhost:8000/api/v1/generate" \
+curl -X POST "http://localhost:8081/api/v1/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Explain the theory of relativity in simple terms.",
@@ -153,24 +170,18 @@ This project includes a simple, interactive command-line interface (CLI) to chat
 
 ### 1. Install CLI Dependencies
 
-The CLI requires a few extra packages. You can install them by running the following command from the project root.
+Install the extra packages required for the CLI using Poetry:
 
 ```bash
-# For Zsh (default on macOS), use quotes
-pip install -e '.[cli]'
-
-# For Bash or other shells, you might not need quotes
-pip install -e .[cli]
+poetry install --extras "cli"
 ```
-
-This uses the `-e` flag to install the project in "editable" mode, so any changes you make to the code are reflected immediately.
 
 ### 2. Run the Chat
 
 Make sure the inference server is running in a separate terminal. Then, start the chat client:
 
 ```bash
-chat
+poetry run chat
 ```
 
 You can now chat with the model interactively. Type `exit` or `quit` to end the session.
@@ -199,15 +210,22 @@ You can now chat with the model interactively. Type `exit` or `quit` to end the 
 
 ### Running in Development Mode
 
+The `dev` command in `pyproject.toml` is already configured to run the server in reload mode.
+
 ```bash
-python -m uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
+poetry run dev
 ```
 
 ### Project Structure
 
 ```
 llm-inference-server/
+├── .env
+├── LICENSE
 ├── README.md
+├── models/
+│   └── (Downloaded models go here)
+├── poetry.lock
 ├── pyproject.toml
 ├── requirements.txt
 ├── scripts/
@@ -217,13 +235,9 @@ llm-inference-server/
     ├── app/
     │   ├── __init__.py
     │   ├── api/
-    │   │   ├── __init__.py
     │   │   └── v1/
     │   │       ├── __init__.py
-    │   │       └── endpoints.py
-    │   ├── core/
-    │   │   ├── __init__.py
-    │   │   └── config.py
+    │   │       └── routes.py
     │   ├── main.py
     │   ├── schemas/
     │   │   ├── __init__.py
@@ -232,10 +246,18 @@ llm-inference-server/
     │   └── services/
     │       ├── __init__.py
     │       └── inference_service.py
-    └── inference/
-        ├── __init__.py
-        ├── engine.py
-        └── prompt_templates.py
+    ├── cli/
+    │   ├── __init__.py
+    │   └── main.py
+    ├── inference/
+    │   ├── __init__.py
+    │   ├── engine.py
+    │   └── prompt_templates.py
+    └── lib/
+        └── core/
+            ├── __init__.py
+            ├── banner.py
+            └── config.py
 ```
 
 ## License
